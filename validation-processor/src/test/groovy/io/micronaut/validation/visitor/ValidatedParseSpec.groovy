@@ -6,6 +6,7 @@ import io.micronaut.inject.ValidatedBeanDefinition
 import io.micronaut.inject.validation.RequiresValidation
 import io.micronaut.inject.writer.BeanDefinitionVisitor
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 
 import java.time.LocalDate
 
@@ -83,6 +84,37 @@ class Test {
         method.hasStereotype(VALIDATED_ANN)
         method.arguments.size() == 1
         method.arguments[0].annotationMetadata.hasAnnotation("io.micronaut.validation.annotation.ValidatedElement")
+    }
+
+    void "test constraints on inherited generic parameters make method @Validated"() {
+        given:
+        def definition = buildBeanDefinition('test.Test','''
+package test;
+
+import java.util.List;
+import jakarta.validation.constraints.NotBlank;
+
+@jakarta.inject.Singleton
+class Test implements TestBase {
+    @Override
+    public void setList(List<String> list) {
+    }
+}
+
+interface TestBase {
+    @io.micronaut.context.annotation.Executable
+    void setList(List<@NotBlank String> list);
+}
+''')
+        when:
+        def method = definition.getRequiredMethod("setList", List<String>);
+
+        then:
+        method.hasStereotype(VALIDATED_ANN)
+        method.arguments.size() == 1
+        method.arguments[0].annotationMetadata.hasAnnotation("io.micronaut.validation.annotation.ValidatedElement")
+        method.arguments[0].typeParameters.size() == 1
+        method.arguments[0].typeParameters[0].annotationMetadata.hasAnnotation(NotBlank)
     }
 
     void "test constraints on a controller operation make method @Validated"() {
