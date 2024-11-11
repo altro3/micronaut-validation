@@ -121,7 +121,6 @@ final class DefaultConstraintViolationBuilder<R> implements ConstraintValidatorC
             constraintValidatorContext.getRootClass(),
             null,
             null,
-            messageTemplate,
             messageInterpolator.interpolate(messageTemplate, new MessageInterpolator.Context() {
                 @Override
                 public ConstraintDescriptor<?> getConstraintDescriptor() {
@@ -138,6 +137,7 @@ final class DefaultConstraintViolationBuilder<R> implements ConstraintValidatorC
                     throw new ValidationException("Not supported!");
                 }
             }),
+            messageTemplate,
             validationPath.iterator().hasNext() ? validationPath : new ValidationPath(constraintValidatorContext.getCurrentPath()),
             constraintValidatorContext.constraint,
             null,
